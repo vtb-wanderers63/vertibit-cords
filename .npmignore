@@ -1,0 +1,32 @@
+# Development files
+.git/
+.gitignore
+.npmignore
+*.log
+coverage/
+.nyc_output/
+
+# Test files (if you add them later)
+test/
+tests/
+__tests__/
+*.test.js
+*.spec.js
+
+# Development dependencies
+.eslintrc.*
+.prettierrc
+.editorconfig
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation source (keep README.md)
+docs/

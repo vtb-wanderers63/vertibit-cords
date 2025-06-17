@@ -1,0 +1,229 @@
+# vertibit-cords
+
+A powerful JavaScript package for geospatial calculations using coordinates. Provides accurate distance calculations and geofence area computations using proven mathematical formulas.
+
+## Features
+
+- 🌍 **Distance Calculations**: Calculate distances between two points using the Haversine formula
+- 📐 **Geofence Areas**: Calculate polygon areas using spherical geometry
+- 🎯 **High Precision**: Suitable for professional geospatial applications
+- 📦 **Multiple Formats**: Support for both CommonJS and ES modules
+- 🔧 **TypeScript Support**: Full TypeScript definitions included
+- ✅ **Input Validation**: Comprehensive validation with descriptive error messages
+- 🌐 **Multiple Units**: Support for kilometers, miles, meters, and their squared equivalents
+
+## Installation
+
+```bash
+npm install vertibit-cords
+```
+
+## Quick Start
+
+### CommonJS
+
+```javascript
+const { calculateDistance, calculateGeofenceArea } = require('vertibit-cords');
+
+// Calculate distance between New York and Los Angeles
+const distance = calculateDistance(
+  {lat: 40.7128, lng: -74.0060}, // New York City
+  {lat: 34.0522, lng: -118.2437}, // Los Angeles
+  'km'
+);
+console.log(`Distance: ${distance.toFixed(2)} km`);
+```
+
+### ES Modules
+
+```javascript
+import { calculateDistance, calculateGeofenceArea } from 'vertibit-cords';
+
+// Calculate area of a triangular geofence
+const area = calculateGeofenceArea([
+  {lat: 40.7128, lng: -74.0060},
+  {lat: 40.7614, lng: -73.9776},
+  {lat: 40.7505, lng: -73.9934},
+  {lat: 40.7128, lng: -74.0060} // Close the polygon
+], 'km2');
+console.log(`Area: ${area.toFixed(2)} km²`);
+```
+
+## API Reference
+
+### calculateDistance(coord1, coord2, unit)
+
+Calculate the distance between two coordinate points using the Haversine formula.
+
+**Parameters:**
+- `coord1` (Object): First coordinate `{lat: number, lng: number}`
+- `coord2` (Object): Second coordinate `{lat: number, lng: number}`
+- `unit` (string, optional): Distance unit - `'km'`, `'miles'`, or `'meters'` (defaults to `'km'`)
+
+**Returns:** `number` - Distance in specified unit
+
+**Example:**
+```javascript
+const distance = calculateDistance(
+  {lat: 51.5074, lng: -0.1278}, // London
+  {lat: 48.8566, lng: 2.3522},  // Paris
+  'km'
+);
+console.log(`London to Paris: ${distance.toFixed(2)} km`);
+// Output: London to Paris: 344.70 km
+```
+
+### calculateGeofenceArea(coordinates, unit)
+
+Calculate the area of a geofence polygon using spherical geometry.
+
+**Parameters:**
+- `coordinates` (Array): Array of coordinates `[{lat: number, lng: number}, ...]`
+- `unit` (string, optional): Area unit - `'km2'`, `'miles2'`, or `'meters2'` (defaults to `'km2'`)
+
+**Returns:** `number` - Area in specified unit
+
+**Example:**
+```javascript
+// Define a rectangular geofence around Central Park, NYC
+const centralParkArea = calculateGeofenceArea([
+  {lat: 40.7829, lng: -73.9654}, // Northwest corner
+  {lat: 40.7829, lng: -73.9489}, // Northeast corner
+  {lat: 40.7648, lng: -73.9489}, // Southeast corner
+  {lat: 40.7648, lng: -73.9654}, // Southwest corner
+  {lat: 40.7829, lng: -73.9654}  // Close the polygon
+], 'km2');
+console.log(`Central Park area: ${centralParkArea.toFixed(2)} km²`);
+```
+
+## Supported Units
+
+### Distance Units
+- `'km'` - Kilometers (default)
+- `'miles'` - Miles
+- `'meters'` - Meters
+
+### Area Units
+- `'km2'` - Square kilometers (default)
+- `'miles2'` - Square miles
+- `'meters2'` - Square meters
+
+## Input Validation
+
+The package includes comprehensive input validation:
+
+- **Coordinates**: Must be objects with numeric `lat` and `lng` properties
+- **Latitude**: Must be between -90 and 90 degrees
+- **Longitude**: Must be between -180 and 180 degrees
+- **Units**: Must be one of the supported unit strings
+- **Polygon**: Must have at least 3 coordinates to form a valid polygon
+
+## Error Handling
+
+The package throws descriptive errors for invalid inputs:
+
+```javascript
+try {
+  const distance = calculateDistance(
+    {lat: 91, lng: 0}, // Invalid latitude
+    {lat: 0, lng: 0}
+  );
+} catch (error) {
+  console.error(error.message);
+  // Output: "coord1 latitude must be between -90 and 90 degrees"
+}
+```
+
+## Advanced Examples
+
+### Multiple Distance Calculations
+
+```javascript
+const cities = [
+  {name: 'New York', lat: 40.7128, lng: -74.0060},
+  {name: 'London', lat: 51.5074, lng: -0.1278},
+  {name: 'Tokyo', lat: 35.6762, lng: 139.6503},
+  {name: 'Sydney', lat: -33.8688, lng: 151.2093}
+];
+
+// Calculate distances from New York to all other cities
+const newYork = cities[0];
+cities.slice(1).forEach(city => {
+  const distance = calculateDistance(newYork, city, 'km');
+  console.log(`${newYork.name} to ${city.name}: ${distance.toFixed(0)} km`);
+});
+```
+
+### Complex Geofence
+
+```javascript
+// Define a complex geofence (irregular polygon)
+const geofenceCoords = [
+  {lat: 40.7831, lng: -73.9712},
+  {lat: 40.7890, lng: -73.9446},
+  {lat: 40.7815, lng: -73.9425},
+  {lat: 40.7735, lng: -73.9580},
+  {lat: 40.7690, lng: -73.9805},
+  {lat: 40.7750, lng: -73.9850},
+  {lat: 40.7831, lng: -73.9712} // Close the polygon
+];
+
+const area = calculateGeofenceArea(geofenceCoords, 'meters2');
+console.log(`Geofence area: ${area.toFixed(0)} m²`);
+```
+
+### Unit Conversions
+
+```javascript
+const coord1 = {lat: 40.7128, lng: -74.0060};
+const coord2 = {lat: 34.0522, lng: -118.2437};
+
+// Get distance in different units
+const distanceKm = calculateDistance(coord1, coord2, 'km');
+const distanceMiles = calculateDistance(coord1, coord2, 'miles');
+const distanceMeters = calculateDistance(coord1, coord2, 'meters');
+
+console.log(`Distance: ${distanceKm.toFixed(2)} km`);
+console.log(`Distance: ${distanceMiles.toFixed(2)} miles`);
+console.log(`Distance: ${distanceMeters.toFixed(0)} meters`);
+```
+
+## Mathematical Background
+
+### Haversine Formula
+The distance calculation uses the Haversine formula, which is well-suited for calculating great-circle distances between two points on Earth's surface. This formula accounts for Earth's spherical shape and provides accurate results for most practical applications.
+
+### Spherical Polygon Area
+The geofence area calculation uses spherical geometry to account for Earth's curvature. This is particularly important for large polygons where the flat-Earth approximation would introduce significant errors.
+
+## TypeScript Support
+
+The package includes comprehensive TypeScript definitions:
+
+```typescript
+import { calculateDistance, calculateGeofenceArea, Coordinate, DistanceUnit, AreaUnit } from 'vertibit-cords';
+
+const point1: Coordinate = {lat: 40.7128, lng: -74.0060};
+const point2: Coordinate = {lat: 34.0522, lng: -118.2437};
+const unit: DistanceUnit = 'km';
+
+const distance: number = calculateDistance(point1, point2, unit);
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Changelog
+
+### 1.0.0
+- Initial release
+- Distance calculation using Haversine formula
+- Geofence area calculation using spherical geometry
+- Input validation and error handling
+- TypeScript support
+- Multiple unit support
