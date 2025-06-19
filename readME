@@ -1,4 +1,47 @@
-# vertibit-cords
+## Advanced Examples
+
+### Location-Based Services
+
+```javascript
+// Restaurant recommendation system
+const userLocation = {lat: 40.7128, lng: -74.0060}; // User in NYC
+
+const restaurants = [
+  {lat: 40.7614, lng: -73.9776, name: 'Central Park Cafe', rating: 4.5},
+  {lat: 40.7505, lng: -73.9934, name: 'Times Square Diner', rating: 4.2},
+  {lat: 40.6892, lng: -74.0445, name: 'Liberty Island Grill', rating: 4.8},
+  {lat: 40.8176, lng: -73.9782, name: 'Harlem Soul Food', rating: 4.6}
+];
+
+// Find restaurants within 10km
+const nearbyRestaurants = getCoordinatesWithinDistance(
+  userLocation, restaurants, 10, 'km'
+);
+
+// Find closest restaurant
+const closest = getClosestCoordinate(userLocation, restaurants, 'km');
+console.log(`Nearest restaurant: ${closest.name} (${closest.distance.toFixed(2)} km away)`);
+
+// Find furthest restaurant (maybe for special occasions)
+const furthest = getFurthestCoordinate(userLocation, restaurants, 'km');
+console.log(`Adventure dining: ${furthest.name} (${furthest.distance.toFixed(2)} km away)`);
+```
+
+### Delivery Route Optimization
+
+```javascript
+const warehouse = {lat: 40.7282, lng: -73.7949}; // JFK area
+
+const deliveryPoints = [
+  {lat: 40.7589, lng: -73.9851, address: 'Manhattan Office', priority: 'high'},
+  {lat: 40.6782, lng: -73.9442, address: 'Brooklyn Store', priority: 'medium'},
+  {lat: 40.8448, lng: -73.8648, address: 'Bronx Warehouse', priority: 'low'},
+  {lat: 40.7505, lng: -73.9934, address: 'Times Square Drop', priority: 'urgent'}
+];
+
+// Find deliveries within 25km range
+const inRangeDeliveries = getCoordinatesWithinDistance(
+  warehouse,# vertibit-cords
 
 A powerful JavaScript package for geospatial calculations using coordinates. Provides accurate distance calculations and geofence area computations using proven mathematical formulas.
 
@@ -23,7 +66,13 @@ npm install vertibit-cords
 ### CommonJS
 
 ```javascript
-const { calculateDistance, calculateGeofenceArea } = require('vertibit-cords');
+const { 
+  calculateDistance, 
+  calculateGeofenceArea, 
+  getCoordinatesWithinDistance,
+  getClosestCoordinate,
+  getFurthestCoordinate
+} = require('vertibit-cords');
 
 // Calculate distance between New York and Los Angeles
 const distance = calculateDistance(
@@ -32,21 +81,43 @@ const distance = calculateDistance(
   'km'
 );
 console.log(`Distance: ${distance.toFixed(2)} km`);
+
+// Find coordinates within 50km of New York
+const nearby = getCoordinatesWithinDistance(
+  {lat: 40.7128, lng: -74.0060}, // New York City
+  [
+    {lat: 40.7614, lng: -73.9776, name: 'Central Park'},
+    {lat: 34.0522, lng: -118.2437, name: 'Los Angeles'},
+    {lat: 40.6892, lng: -74.0445, name: 'Statue of Liberty'}
+  ],
+  50, // 50 km radius
+  'km'
+);
+console.log(`Found ${nearby.length} locations within 50km`);
 ```
 
 ### ES Modules
 
 ```javascript
-import { calculateDistance, calculateGeofenceArea } from 'vertibit-cords';
+import { 
+  calculateDistance, 
+  calculateGeofenceArea,
+  getCoordinatesWithinDistance,
+  getClosestCoordinate,
+  getFurthestCoordinate
+} from 'vertibit-cords';
 
-// Calculate area of a triangular geofence
-const area = calculateGeofenceArea([
-  {lat: 40.7128, lng: -74.0060},
-  {lat: 40.7614, lng: -73.9776},
-  {lat: 40.7505, lng: -73.9934},
-  {lat: 40.7128, lng: -74.0060} // Close the polygon
-], 'km2');
-console.log(`Area: ${area.toFixed(2)} km²`);
+// Find the closest location
+const closest = getClosestCoordinate(
+  {lat: 40.7128, lng: -74.0060}, // New York City
+  [
+    {lat: 40.7614, lng: -73.9776, name: 'Central Park'},
+    {lat: 34.0522, lng: -118.2437, name: 'Los Angeles'},
+    {lat: 41.8781, lng: -87.6298, name: 'Chicago'}
+  ],
+  'km'
+);
+console.log(`Closest: ${closest.name} at ${closest.distance.toFixed(2)} km`);
 ```
 
 ## API Reference
@@ -71,6 +142,85 @@ const distance = calculateDistance(
 );
 console.log(`London to Paris: ${distance.toFixed(2)} km`);
 // Output: London to Paris: 344.70 km
+```
+
+### getCoordinatesWithinDistance(fromCoord, coordinates, maxDistance, unit)
+
+Find all coordinates within a specified distance from a reference point.
+
+**Parameters:**
+- `fromCoord` (Object): Reference coordinate `{lat: number, lng: number}`
+- `coordinates` (Array): Array of coordinates to check `[{lat: number, lng: number}, ...]`
+- `maxDistance` (number): Maximum distance to include in results
+- `unit` (string, optional): Distance unit - `'km'`, `'miles'`, or `'meters'` (defaults to `'km'`)
+
+**Returns:** `Array` - Array of coordinates within distance, each with added `distance` property
+
+**Example:**
+```javascript
+const nearby = getCoordinatesWithinDistance(
+  {lat: 40.7128, lng: -74.0060}, // New York City
+  [
+    {lat: 40.7614, lng: -73.9776, name: 'Central Park'},
+    {lat: 34.0522, lng: -118.2437, name: 'Los Angeles'},
+    {lat: 40.6892, lng: -74.0445, name: 'Statue of Liberty'}
+  ],
+  50, // 50 km radius
+  'km'
+);
+// Returns: [{lat: 40.7614, lng: -73.9776, name: 'Central Park', distance: 8.21}, ...]
+```
+
+### getClosestCoordinate(fromCoord, coordinates, unit)
+
+Find the closest coordinate from an array of coordinates.
+
+**Parameters:**
+- `fromCoord` (Object): Reference coordinate `{lat: number, lng: number}`
+- `coordinates` (Array): Array of coordinates to check `[{lat: number, lng: number}, ...]`
+- `unit` (string, optional): Distance unit - `'km'`, `'miles'`, or `'meters'` (defaults to `'km'`)
+
+**Returns:** `Object|null` - Closest coordinate with added `distance` property, or `null` if array is empty
+
+**Example:**
+```javascript
+const closest = getClosestCoordinate(
+  {lat: 40.7128, lng: -74.0060}, // New York City
+  [
+    {lat: 40.7614, lng: -73.9776, name: 'Central Park'},
+    {lat: 34.0522, lng: -118.2437, name: 'Los Angeles'},
+    {lat: 41.8781, lng: -87.6298, name: 'Chicago'}
+  ],
+  'km'
+);
+console.log(`Closest: ${closest.name} at ${closest.distance.toFixed(2)} km`);
+// Output: Closest: Central Park at 8.21 km
+```
+
+### getFurthestCoordinate(fromCoord, coordinates, unit)
+
+Find the furthest coordinate from an array of coordinates.
+
+**Parameters:**
+- `fromCoord` (Object): Reference coordinate `{lat: number, lng: number}`
+- `coordinates` (Array): Array of coordinates to check `[{lat: number, lng: number}, ...]`
+- `unit` (string, optional): Distance unit - `'km'`, `'miles'`, or `'meters'` (defaults to `'km'`)
+
+**Returns:** `Object|null` - Furthest coordinate with added `distance` property, or `null` if array is empty
+
+**Example:**
+```javascript
+const furthest = getFurthestCoordinate(
+  {lat: 40.7128, lng: -74.0060}, // New York City
+  [
+    {lat: 40.7614, lng: -73.9776, name: 'Central Park'},
+    {lat: 34.0522, lng: -118.2437, name: 'Los Angeles'},
+    {lat: 41.8781, lng: -87.6298, name: 'Chicago'}
+  ],
+  'km'
+);
+console.log(`Furthest: ${furthest.name} at ${furthest.distance.toFixed(2)} km`);
+// Output: Furthest: Los Angeles at 3944.42 km
 ```
 
 ### calculateGeofenceArea(coordinates, unit)
@@ -135,6 +285,152 @@ try {
 ```
 
 ## Advanced Examples
+
+### Delivery Route Optimization
+
+```javascript
+const warehouse = {lat: 40.7282, lng: -73.7949}; // JFK area
+
+const deliveryPoints = [
+  {lat: 40.7589, lng: -73.9851, address: 'Manhattan Office', priority: 'high'},
+  {lat: 40.6782, lng: -73.9442, address: 'Brooklyn Store', priority: 'medium'},
+  {lat: 40.8448, lng: -73.8648, address: 'Bronx Warehouse', priority: 'low'},
+  {lat: 40.7505, lng: -73.9934, address: 'Times Square Drop', priority: 'urgent'}
+];
+
+// Find deliveries within 25km range
+const inRangeDeliveries = getCoordinatesWithinDistance(
+  warehouse,
+  deliveryPoints,
+  25,
+  'km'
+);
+
+console.log(`${inRangeDeliveries.length} deliveries within range`);
+
+// Start with closest delivery
+let currentLocation = warehouse;
+const route = [];
+
+while (inRangeDeliveries.length > 0) {
+  const nextStop = getClosestCoordinate(currentLocation, inRangeDeliveries, 'km');
+  route.push(nextStop);
+  
+  // Remove from remaining deliveries
+  const index = inRangeDeliveries.findIndex(d => 
+    d.lat === nextStop.lat && d.lng === nextStop.lng
+  );
+  inRangeDeliveries.splice(index, 1);
+  
+  currentLocation = nextStop;
+}
+
+console.log('Optimized route:');
+route.forEach((stop, i) => {
+  console.log(`${i + 1}. ${stop.address} (${stop.distance.toFixed(2)} km)`);
+});
+```
+
+### Emergency Services Coverage
+
+```javascript
+const emergencyCall = {lat: 40.7505, lng: -73.9934}; // Times Square emergency
+
+const fireStations = [
+  {lat: 40.7614, lng: -73.9776, name: 'Station 1 - Central Park', units: 3},
+  {lat: 40.7282, lng: -73.9942, name: 'Station 2 - Lower Manhattan', units: 2},
+  {lat: 40.7831, lng: -73.9712, name: 'Station 3 - Upper West', units: 4},
+  {lat: 40.7419, lng: -73.9891, name: 'Station 4 - Midtown', units: 5}
+];
+
+// Find closest station for fastest response
+const closestStation = getClosestCoordinate(emergencyCall, fireStations, 'km');
+console.log(`Dispatch: ${closestStation.name}`);
+console.log(`ETA: ~${(closestStation.distance * 3).toFixed(0)} minutes`); // Assume 20km/h in traffic
+
+// Find all stations within 5km for backup
+const backupStations = getCoordinatesWithinDistance(
+  emergencyCall,
+  fireStations,
+  5,
+  'km'
+);
+
+console.log(`${backupStations.length} stations available for backup`);
+```
+
+### Real Estate Analysis
+
+```javascript
+const newOfficeLocation = {lat: 40.7614, lng: -73.9776}; // Central Park area
+
+const competitors = [
+  {lat: 40.7505, lng: -73.9934, name: 'CompetitorA HQ', employees: 500},
+  {lat: 40.7282, lng: -73.9942, name: 'CompetitorB Office', employees: 200},
+  {lat: 40.7831, lng: -73.9712, name: 'CompetitorC Branch', employees: 150}
+];
+
+const publicTransport = [
+  {lat: 40.7589, lng: -73.9851, name: 'Columbus Circle Station', type: 'subway'},
+  {lat: 40.7648, lng: -73.9808, name: '59th St Station', type: 'subway'},
+  {lat: 40.7505, lng: -73.9934, name: 'Times Square Hub', type: 'major_hub'}
+];
+
+// Analyze competition proximity
+console.log('Competition Analysis:');
+competitors.forEach(competitor => {
+  const distance = calculateDistance(newOfficeLocation, competitor, 'km');
+  console.log(`${competitor.name}: ${distance.toFixed(2)} km away`);
+});
+
+// Check public transport accessibility
+const nearbyTransport = getCoordinatesWithinDistance(
+  newOfficeLocation,
+  publicTransport,
+  1, // Within 1km walking distance
+  'km'
+);
+
+console.log(`\nPublic Transport: ${nearbyTransport.length} stations within 1km`);
+```
+
+### Agricultural Zone Management
+
+```javascript
+const farmHQ = {lat: 40.8176, lng: -73.9782}; // Farm headquarters
+
+const fields = [
+  {lat: 40.8200, lng: -73.9800, crop: 'corn', size: 50, lastWatered: '2025-06-15'},
+  {lat: 40.8150, lng: -73.9750, crop: 'wheat', size: 30, lastWatered: '2025-06-14'},
+  {lat: 40.8220, lng: -73.9820, crop: 'soybeans', size: 40, lastWatered: '2025-06-13'},
+  {lat: 40.8100, lng: -73.9700, crop: 'vegetables', size: 20, lastWatered: '2025-06-12'}
+];
+
+// Find fields needing immediate attention (furthest from last watering)
+const urgentFields = fields.filter(field => {
+  const daysSinceWatering = Math.floor(
+    (new Date('2025-06-18') - new Date(field.lastWatered)) / (1000 * 60 * 60 * 24)
+  );
+  return daysSinceWatering > 3;
+});
+
+if (urgentFields.length > 0) {
+  const closest = getClosestCoordinate(farmHQ, urgentFields, 'km');
+  console.log(`Priority field: ${closest.crop} field (${closest.distance.toFixed(2)} km)`);
+}
+
+// Calculate total farm area using field boundaries
+const farmBoundary = [
+  {lat: 40.8250, lng: -73.9850},
+  {lat: 40.8250, lng: -73.9650},
+  {lat: 40.8050, lng: -73.9650},
+  {lat: 40.8050, lng: -73.9850},
+  {lat: 40.8250, lng: -73.9850}
+];
+
+const totalArea = calculateGeofenceArea(farmBoundary, 'km2');
+console.log(`Total farm area: ${(totalArea * 247.105).toFixed(2)} acres`);
+```
 
 ### Multiple Distance Calculations
 
