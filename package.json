@@ -1,12 +1,15 @@
 {
   "name": "vertibit-cords",
-  "version": "1.2.0",
+  "version": "1.0.0",
   "description": "A JavaScript package for geospatial calculations using coordinates, including distance calculations and geofence area computations",
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "node examples/usage.js"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "example": "node examples/usage.js"
   },
   "keywords": [
     "geospatial",
@@ -18,16 +21,16 @@
     "mapping",
     "geography"
   ],
-  "author": "VTB63",
+  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vtb-wanderers63/vertibit-cords.git.git"
+    "url": "git+https://github.com/yourusername/vertibit-cords.git"
   },
   "bugs": {
-    "url": "https://github.com/vtb-wanderers63/vertibit-cords.git/issues"
+    "url": "https://github.com/yourusername/vertibit-cords/issues"
   },
-  "homepage": "https://github.com/vtb-wanderers63/vertibit-cords.git#readME",
+  "homepage": "https://github.com/yourusername/vertibit-cords#readme",
   "engines": {
     "node": ">=12.0.0"
   },
@@ -35,6 +38,7 @@
     "index.js",
     "index.d.ts",
     "README.md",
+    "LICENSE",
     "examples/"
   ],
   "exports": {
@@ -42,6 +46,30 @@
       "import": "./index.js",
       "require": "./index.js",
       "types": "./index.d.ts"
+    }
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "index.js",
+      "!examples/**",
+      "!**/node_modules/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 100,
+        "lines": 95,
+        "statements": 95
+      }
     }
   }
 }
