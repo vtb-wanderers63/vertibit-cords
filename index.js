@@ -432,6 +432,140 @@ function isCoordinateInGeofence(coord, geofence) {
   return inside;
 }
 
+/**
+ * Calculate the minimum distance from a point to a line segment
+ * @private
+ * @param {Object} point - Point coordinate {lat: number, lng: number}
+ * @param {Object} lineStart - Line segment start {lat: number, lng: number}
+ * @param {Object} lineEnd - Line segment end {lat: number, lng: number}
+ * @param {string} unit - Distance unit
+ * @returns {number} Minimum distance from point to line segment
+ */
+function pointToSegmentDistance(point, lineStart, lineEnd, unit) {
+  // Calculate distances
+  const d1 = calculateDistance(point, lineStart, unit);
+  const d2 = calculateDistance(point, lineEnd, unit);
+  const d3 = calculateDistance(lineStart, lineEnd, unit);
+
+  // If the line segment has zero length, return distance to either endpoint
+  if (d3 === 0) {
+    return d1;
+  }
+
+  // Calculate the projection of the point onto the line segment using dot product
+  // Convert to Cartesian coordinates for accurate calculation
+  const lat1 = toRadians(lineStart.lat);
+  const lng1 = toRadians(lineStart.lng);
+  const lat2 = toRadians(lineEnd.lat);
+  const lng2 = toRadians(lineEnd.lng);
+  const latP = toRadians(point.lat);
+  const lngP = toRadians(point.lng);
+
+  // Vector from lineStart to lineEnd
+  const dx = lng2 - lng1;
+  const dy = lat2 - lat1;
+
+  // Vector from lineStart to point
+  const dpx = lngP - lng1;
+  const dpy = latP - lat1;
+
+  // Calculate projection parameter t
+  const t = (dpx * dx + dpy * dy) / (dx * dx + dy * dy);
+
+  // If t is outside [0,1], the closest point is one of the endpoints
+  if (t < 0) {
+    return d1; // Closest to lineStart
+  }
+  if (t > 1) {
+    return d2; // Closest to lineEnd
+  }
+
+  // Calculate the projected point on the line segment
+  const projLat = toDegrees(lat1 + t * dy);
+  const projLng = toDegrees(lng1 + t * dx);
+
+  // Return distance to the projected point
+  return calculateDistance(point, { lat: projLat, lng: projLng }, unit);
+}
+
+/**
+ * Check if a coordinate is within a specified distance from a geofence polygon's perimeter
+ * @param {Object} coord - Coordinate to check {lat: number, lng: number}
+ * @param {Array<Object>} geofence - Array of coordinates defining the polygon [{lat: number, lng: number}, ...]
+ * @param {number} maxDistance - Maximum distance from geofence perimeter
+ * @param {string} [unit='km'] - Distance unit ('km', 'miles', 'meters')
+ * @returns {Object} Object with {isNear: boolean, distance: number, closestPoint: {lat, lng}}
+ * @throws {Error} If coordinates are invalid or unit is not supported
+ *
+ * @example
+ * const result = isCoordinateNearGeofence(
+ *   {lat: 40.7300, lng: -73.9950}, // Point to check
+ *   [
+ *     {lat: 40.7128, lng: -74.0060},
+ *     {lat: 40.7614, lng: -73.9776},
+ *     {lat: 40.7505, lng: -73.9934}
+ *   ],
+ *   5, // Within 5 km of the geofence
+ *   'km'
+ * );
+ * console.log(`Point is ${result.isNear ? 'near' : 'not near'} the geofence`);
+ * console.log(`Distance to geofence: ${result.distance.toFixed(2)} km`);
+ */
+function isCoordinateNearGeofence(coord, geofence, maxDistance, unit = 'km') {
+  // Validate inputs
+  validateCoordinate(coord, 'coord');
+
+  if (!Array.isArray(geofence)) {
+    throw new Error('Geofence must be an array of coordinates');
+  }
+
+  if (geofence.length < 3) {
+    throw new Error('At least 3 coordinates are required to form a geofence polygon');
+  }
+
+  if (typeof maxDistance !== 'number' || maxDistance < 0) {
+    throw new Error('Max distance must be a non-negative number');
+  }
+
+  const validUnits = ['km', 'miles', 'meters'];
+  const normalizedUnit = validateUnit(unit, validUnits, 'km');
+
+  // Validate each geofence coordinate
+  geofence.forEach((fenceCoord, index) => {
+    validateCoordinate(fenceCoord, `geofence[${index}]`);
+  });
+
+  // Find the minimum distance from the point to any edge of the polygon
+  let minDistance = Infinity;
+  let closestPoint = null;
+
+  // Check distance to each edge of the polygon
+  for (let i = 0; i < geofence.length; i++) {
+    const j = (i + 1) % geofence.length;
+    const segmentStart = geofence[i];
+    const segmentEnd = geofence[j];
+
+    // Calculate distance to this edge
+    const distance = pointToSegmentDistance(coord, segmentStart, segmentEnd, normalizedUnit);
+
+    if (distance < minDistance) {
+      minDistance = distance;
+
+      // Store the closest edge endpoints for reference
+      closestPoint = {
+        edgeStart: { ...segmentStart },
+        edgeEnd: { ...segmentEnd },
+      };
+    }
+  }
+
+  return {
+    isNear: minDistance <= maxDistance,
+    distance: minDistance,
+    closestEdge: closestPoint,
+  };
+}
+
 // CommonJS exports
 module.exports = {
   calculateDistance,
@@ -445,6 +579,7 @@ module.exports = {
 if (typeof exports !== 'undefined') {
   exports.calculateDistance = calculateDistance;
   exports.isCoordinateInGeofence = isCoordinateInGeofence;
+  exports.isCoordinateNearGeofence = isCoordinateNearGeofence;
   exports.calculateGeofenceArea = calculateGeofenceArea;
   exports.getCoordinatesWithinDistance = getCoordinatesWithinDistance;
   exports.getClosestCoordinate = getClosestCoordinate;
