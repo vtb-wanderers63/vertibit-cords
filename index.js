@@ -573,6 +573,8 @@ module.exports = {
   getCoordinatesWithinDistance,
   getClosestCoordinate,
   getFurthestCoordinate,
+  isCoordinateInGeofence,
+  isCoordinateNearGeofence
 };
 
 // ES Module exports (for environments that support it)
