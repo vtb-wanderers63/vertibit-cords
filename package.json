@@ -1,6 +1,6 @@
 {
   "name": "vertibit-cords",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A JavaScript package for geospatial calculations using coordinates, including distance calculations and geofence area computations",
   "main": "index.js",
   "module": "index.js",
